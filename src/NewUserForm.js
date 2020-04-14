@@ -1,14 +1,17 @@
-import React from 'react';
-import { Button, Grid, Typography, Paper } from '@material-ui/core';
-import CompanyForm from './company.js'
-import PersonalInfoForm from './PersonalInfo.js'
-import CompanyInfoForm from './CompanyInfo.js'
+import React,{Fragment} from 'react';
+import PT from 'prop-types';
+import {
+  Button, Grid, Typography, Paper,
+} from '@material-ui/core';
 
+import CompanyForm from './CompanyForm';
+import PersonalInfoForm from './PersonalInfo';
+import CompanyInfoForm from './CompanyInfo';
 
-const defaultValues =  {
+const defaultValues = {
   company: '',
-  lastname: '',
-  firstname: '',
+  lastName: '',
+  firstName: '',
   gender: '',
   showName: '',
   contractDate: '',
@@ -19,107 +22,126 @@ const defaultValues =  {
   department: '',
   jobTitle: '',
   superior: '',
-  otherCompany:'',
+  otherCompany: '',
 };
 
 class FormikCloudForm extends React.Component {
-    state = {
+  constructor(props) {
+    super(props);
+
+    this.state = {
       values: defaultValues,
       error: null,
       success: false,
+    };
   }
-
 
    handleSubmit = (event) => {
-    event.preventDefault();
-    console.log(this.state)
-    fetch('https://api.formik.com/submit/new-user-notification/new-user', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(this.state.values),
-    })
-      .then((result) => {
-        this.setState({ success: true });
-      })
-      .catch((error) => {
-        this.setState({ error: error.message });
-      });
-  }
+     event.preventDefault();
+
+     const { values } = this.state;
+
+     fetch('https://api.formik.com/submit/new-user-notification/new-user', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify(values),
+     })
+       .then(() => {
+         this.setState({ success: true });
+       })
+       .catch((error) => {
+         this.setState({ error: error.message });
+       });
+   }
 
   handleInputChange = (event) => {
-    let nam = event.target.name;
-    let val = event.target.value;
-    this.setState({values: {
-      ...this.state.values,
-      [nam]: val
-    }});
+    const { values } = this.state;
+    const nam = event.target.name;
+    const val = event.target.value;
+    this.setState({
+      values: {
+        ...values,
+        [nam]: val,
+      },
+    });
   };
   ;
-  
+
   render() {
+    const { success, values, error } = this.state;
+
     return (
-        <Grid container direction='column' justify='center' wrap='nowarp' alignItems='center' >
-          <Paper style={{ maxWidth: 500, padding:80 }} align='center'>
-            <Grid item>
-            <Typography align="left" variant="h4">
-                Aanvragen nieuwe gebruiker
-            </Typography>
-            <Typography paragraph align="left">
-              Via het onderstaande formulier kunt u een account voor een nieuwe werknemer aanvragen
-            </Typography>
-            </Grid>
+      <Grid container direction="column" justify="center" wrap="nowarp" alignItems="center" elevation={3}>
+        <Paper style={{ maxWidth: 500, padding: 80 }} align="center">
+          <Grid item>
             <form onSubmit={this.handleSubmit}>
-        {!this.state.success
-          ? (
-          <Grid container direction='column' justify='flex-end' wrap='nowarp' alignItems='stretch' >
-            <Grid item>
-          <CompanyForm values={this.state.values} onInput={this.handleInputChange} />
+              {!success
+                ? (
+                  <Fragment>
+                  <Grid item>
+                   <Typography align="left" variant="h4">
+                      Aanvragen nieuwe gebruiker
+                   </Typography>
+                   <Typography paragraph align="left">
+                     Via het onderstaande formulier kunt u een account voor een nieuwe werknemer aanvragen
+                   </Typography>
+                  </Grid>
+                  <Grid
+                    container
+                    direction="column"
+                    wrap="nowarp"
+                    spacing={2}
+                  >
+                    <Grid item xs={12}>
+                      <CompanyForm values={values} onInput={this.handleInputChange} />
+                    </Grid>
+                    <Grid item>
+                      <PersonalInfoForm values={values} onInput={this.handleInputChange} />
+                    </Grid>
+                    <Grid item>
+                      <CompanyInfoForm values={values} onInput={this.handleInputChange} />
+                    </Grid>
+                    <Grid item style={{ alignSelf: 'flex-start' }}>
+                      {error && <Typography>{error}</Typography>}
+                      <Button variant="outlined" type="submit">Submit</Button>
+                    </Grid>
+                  </Grid>
+                  </Fragment>
+                ) : (
+                  <ThankComponent retry={() => this.setState({
+                    success: false,
+                    values: defaultValues,
+                  })}
+                  />
+                )}
+            </form>
           </Grid>
-           <Grid item  >
-            <PersonalInfoForm values={this.state.values} onInput={this.handleInputChange} />
-            </Grid>
-          <Grid item>
-              <CompanyInfoForm values={this.state.values} onInput={this.handleInputChange} />
-              </Grid>
-          <Grid item>
-          <Button variant='outlined' type="submit">Submit</Button>
-          </Grid>
-          </Grid>
-          
-         
-          ) : (
-            <ThankComponent retry={() => this.setState({
-              success: false,
-              values: defaultValues,
-              error: null,
-            })} />
-          )
-        }
-        </form> 
-         </Paper>
-          </Grid>
-        
-      
-      
+        </Paper>
+      </Grid>
     );
   }
 }
 
 const ThankComponent = ({ retry }) => (
-  <Grid container spacing={2} direction='column'>
+  <Grid container spacing={2} direction="column">
     <Grid item>
-      <Typography variant='h4'>Bedankt voor de aanmelding</Typography>
+      <Typography variant="h4">Bedankt voor de aanmelding</Typography>
     </Grid>
     <Grid item>
-      <Typography variant='h5'>Klik opnieuw om nog een acount aan te maken</Typography>
+      <Typography variant="h5">Klik opnieuw om nog een acount aan te maken</Typography>
     </Grid>
     <Grid item>
-      <Button variant='outlined'onClick={retry}>Opnieuw</Button>
+      <Button variant="outlined" onClick={retry}>Opnieuw</Button>
     </Grid>
   </Grid>
-)
-  
+);
+
+ThankComponent.propTypes = {
+  retry: PT.func.isRequired,
+};
+
 
 export default FormikCloudForm;
+

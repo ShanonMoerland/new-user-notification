@@ -1,13 +1,13 @@
-  
-import './App.css';
-import FormikCouldForm from './NewUserForm.js';
-
-
+import React from 'react';
+import FormikCouldForm from './NewUserForm';
 
 
 function App() {
   return (
-    <div style={{ padding: 80 }}>
+    <div style={{ 
+      minHeight: '100vh',
+      backgroundColor: '#F0EFEE',
+      padding: 80 }}>
       <FormikCouldForm />
     </div>
 
